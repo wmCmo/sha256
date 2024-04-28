@@ -1,3 +1,6 @@
+import modules.prime as p
+
+
 def bin_string(inpt):
     outpt = ''
     for i in inpt:
@@ -28,3 +31,18 @@ def parsing(inpt):
             parsed[block].append([])
             parsed[block][bit_word] = block_i[32*bit_word:32*(bit_word+1)]
     return parsed
+
+
+def set_hash(hashes_no=8):
+    primes = p.find_primes(hashes_no)
+    sqr_root_primes_wo_int = [prime**0.5 -
+                              round((prime**0.5)-0.5) for prime in primes]
+    bin_fracs = []
+    for i, prime in enumerate(sqr_root_primes_wo_int):
+        bin_fracs.append('')
+        multiplier = prime
+        for _ in range(32):
+            multiplier = float(str(multiplier)[1:])
+            multiplier = multiplier * 2
+            bin_fracs[i] += str(multiplier)[0]
+    return bin_fracs
