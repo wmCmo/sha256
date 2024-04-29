@@ -46,3 +46,37 @@ def set_hash(hashes_no=8, root=2):
             bin_fracs[i] += str(multiplier)[0]
     return [hex(int(bin, 2)) for bin in bin_fracs]
     return bin_fracs
+
+def loop(x, round) -> int:
+    for _ in range(round):
+        x = x[-1] + x[:len(x)-1]
+        print(x)
+    return int(x,2)
+
+def shift(x, zeroes:int):
+    return int(x,2) >> zeroes
+
+def sigma_0(M):
+    loop7 = loop(M, 7)
+    loop18 = loop(M, 18)
+    shift3 = shift(M, 3)
+    
+    pass
+
+def sigma_1():
+    pass
+
+
+def schedule_W(M, i):
+
+    pass
+
+def compute(inpt):
+    parsed = parsing(inpt)
+    schedled = []
+    for block in parsed:
+        for i, M in enumerate(block):
+            if i < 16:
+                schedled.append(M)
+            else:
+                schedled.append(schedule_W(M, i))
