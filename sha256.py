@@ -32,11 +32,10 @@ def parsing(inpt):
             parsed[block][bit_word] = block_i[32*bit_word:32*(bit_word+1)]
     return parsed
 
-
-def set_hash(hashes_no=8):
+def set_hash(hashes_no=8, root=2):
     primes = p.find_primes(hashes_no)
-    sqr_root_primes_wo_int = [prime**0.5 -
-                              round((prime**0.5)-0.5) for prime in primes]
+    sqr_root_primes_wo_int = [prime**(1/root) -
+                              round((prime**(1/root))-0.5) for prime in primes]
     bin_fracs = []
     for i, prime in enumerate(sqr_root_primes_wo_int):
         bin_fracs.append('')
@@ -45,4 +44,5 @@ def set_hash(hashes_no=8):
             multiplier = float(str(multiplier)[1:])
             multiplier = multiplier * 2
             bin_fracs[i] += str(multiplier)[0]
+    return [hex(int(bin, 2)) for bin in bin_fracs]
     return bin_fracs
