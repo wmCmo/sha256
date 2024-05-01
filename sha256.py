@@ -4,7 +4,8 @@ import modules.prime as p
 def bin_string(inpt: str) -> str:
     outpt = ''
     for i in inpt:
-        outpt += bin(ord(i))[2:]
+        b = bin(ord(i))[2:]
+        outpt += ((8-len(b)) * '0' + b)
     return outpt
 
 
@@ -129,25 +130,24 @@ def Sigma1(x: str):
 def Ch(e: str, f: str, g: str) -> str:
     result = ''
     for i, selector in enumerate(e):
-        if selector == 1:
+        if selector == '1':
             result += f[i]
         else:
             result += g[i]
     return result
 
 
-def Maj(a: str, b: str, c: str):
+def Maj(a: str, b: str, c: str) -> str:
     groups = ['1' if sum([int(a[i]), int(b[i]), int(c[i])])
               > 1 else '0' for i in range(len(a))]
     return ''.join(groups)
 
 
 def t1(e: str, f: str, g: str, h: str, K: str, w: str):
-    Sigma_0 = Sigma0(e)
+    Sigma_1 = Sigma1(e)
     choose = Ch(e, f, g)
-
-    result = bin(sum([int(x, 2)
-                 for x in [h, Sigma_0, choose, K, w]]) % (2*32))[2:]
+    result = bin((int(h, 2) + int(Sigma_1, 2) + int(choose, 2) +
+                 int(K, 2) + int(w, 2)) % (2**32))[2:]
     return extend(result)
 
 
@@ -158,7 +158,7 @@ def t2(a: str, b: str, c: str):
     return extend(result)
 
 
-def compute(inpt:str) -> list[str]:
+def compute(inpt: str) -> str:
     scheduled = schedule(inpt)
     h0, h1, h2, h3, h4, h5, h6, h7 = set_hash()
     K = set_hash(64, 3)
@@ -167,7 +167,6 @@ def compute(inpt:str) -> list[str]:
         for i, t in enumerate(block):
             t_1 = t1(e, f, g, h, K[i], t)
             t_2 = t2(a, b, c)
-
             h = g
             g = f
             f = e
@@ -177,8 +176,8 @@ def compute(inpt:str) -> list[str]:
             b = a
             a = extend(bin((int(t_1, 2) + int(t_2, 2)) % (2**32))[2:])
         # update
-    return [a, b, c, d, e, f, g, h]
 
+    result = ''.join([])
+    return result
 
-# print(compute('A'))
-print(compute('RedBlockBlue'))
+print(compute('A'))
