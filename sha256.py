@@ -108,3 +108,77 @@ def schedule(inpt: str) -> list[list[str]]:
             else:
                 scheduled[i].append(schedule_W(scheduled[i], t))
     return scheduled
+
+
+def Sigma0(x: str):
+    loop2 = loop(x, 2)
+    loop13 = loop(x, 13)
+    loop22 = loop(x, 22)
+
+    return add_mod(loop2, loop13, loop22)
+
+
+def Sigma1(x: str):
+    loop6 = loop(x, 6)
+    loop11 = loop(x, 11)
+    loop25 = loop(x, 25)
+
+    return add_mod(loop6, loop11, loop25)
+
+
+def Ch(e: str, f: str, g: str) -> str:
+    result = ''
+    for i, selector in enumerate(e):
+        if selector == 1:
+            result += f[i]
+        else:
+            result += g[i]
+    return result
+
+
+def Maj(a: str, b: str, c: str):
+    groups = ['1' if sum([int(a[i]), int(b[i]), int(c[i])])
+              > 1 else '0' for i in range(len(a))]
+    return ''.join(groups)
+
+
+def t1(e: str, f: str, g: str, h: str, K: str, w: str):
+    Sigma_0 = Sigma0(e)
+    choose = Ch(e, f, g)
+
+    result = bin(sum([int(x, 2)
+                 for x in [h, Sigma_0, choose, K, w]]) % (2*32))[2:]
+    return extend(result)
+
+
+def t2(a: str, b: str, c: str):
+    Sigma_0 = Sigma0(a)
+    Majority = Maj(a, b, c)
+    result = bin((int(Sigma_0, 2) + int(Majority, 2)) % (2**32))[2:]
+    return extend(result)
+
+
+def compute(inpt:str) -> list[str]:
+    scheduled = schedule(inpt)
+    h0, h1, h2, h3, h4, h5, h6, h7 = set_hash()
+    K = set_hash(64, 3)
+    for block in scheduled:
+        a, b, c, d, e, f, g, h = h0, h1, h2, h3, h4, h5, h6, h7
+        for i, t in enumerate(block):
+            t_1 = t1(e, f, g, h, K[i], t)
+            t_2 = t2(a, b, c)
+
+            h = g
+            g = f
+            f = e
+            e = extend(bin((int(d, 2) + int(t_1, 2)) % (2**32))[2:])
+            d = c
+            c = b
+            b = a
+            a = extend(bin((int(t_1, 2) + int(t_2, 2)) % (2**32))[2:])
+        # update
+    return [a, b, c, d, e, f, g, h]
+
+
+# print(compute('A'))
+print(compute('RedBlockBlue'))
