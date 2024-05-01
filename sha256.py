@@ -32,6 +32,7 @@ def parsing(inpt):
             parsed[block][bit_word] = block_i[32*bit_word:32*(bit_word+1)]
     return parsed
 
+
 def set_hash(hashes_no=8, root=2):
     primes = p.find_primes(hashes_no)
     sqr_root_primes_wo_int = [prime**(1/root) -
@@ -44,39 +45,58 @@ def set_hash(hashes_no=8, root=2):
             multiplier = float(str(multiplier)[1:])
             multiplier = multiplier * 2
             bin_fracs[i] += str(multiplier)[0]
-    return [hex(int(bin, 2)) for bin in bin_fracs]
+    # return [hex(int(bin, 2)) for bin in bin_fracs]
     return bin_fracs
 
-def loop(x, round) -> int:
+
+def loop(x, round):
     for _ in range(round):
         x = x[-1] + x[:len(x)-1]
-        print(x)
-    return int(x,2)
+    return x
 
-def shift(x, zeroes:int):
-    return int(x,2) >> zeroes
+
+def shift(x, zeroes: int):
+    result = bin(int(x, 2) >> zeroes)[2:]
+    return (32-len(result))*'0' + result
+
+
+def add_mod(m1, m2, m3):
+    added = []
+    for i in range(len(m1)-1):
+        added.append(
+            str((int(m1[i]) + int(m2[i]) + int(m3[i])) % 2))
+    return ''.join(added)
+
 
 def sigma_0(M):
     loop7 = loop(M, 7)
     loop18 = loop(M, 18)
     shift3 = shift(M, 3)
-    
-    pass
 
-def sigma_1():
-    pass
+    return add_mod(loop7, loop18, shift3)
 
 
-def schedule_W(M, i):
+def sigma_1(M):
+    loop17 = loop(M, 17)
+    loop19 = loop(M, 19)
+    shift10 = shift(M, 10)
+    return add_mod(loop17, loop19, shift10)
 
-    pass
+
+def schedule_W(scheduled, t):
+    result = bin((int(sigma_1(scheduled[t-2]), 2) + int(scheduled[t-7], 2) + int(
+        sigma_0(scheduled[t-15]), 2) + int(scheduled[t-16], 2)) % (2**32))[2:]
+    return (32-len(result)) * '0' + result
+
 
 def compute(inpt):
     parsed = parsing(inpt)
-    schedled = []
-    for block in parsed:
-        for i, M in enumerate(block):
-            if i < 16:
-                schedled.append(M)
+    scheduled = []
+    for i, block in enumerate(parsed):
+        scheduled.append([])
+        for t in range(64):
+            if t < 16:
+                scheduled[i].append(block[t])
             else:
-                schedled.append(schedule_W(M, i))
+                scheduled[i].append(schedule_W(scheduled[i], t))
+    return scheduled
