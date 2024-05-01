@@ -56,24 +56,19 @@ def loop(x: str, round: int) -> str:
     return x
 
 
-def wrap_result(x: str, y: str) -> str:
-    return extend(bin((int(x, 2) + int(y, 2)) % (2**32))[2:])
-
-
 def extend(result: str) -> str:
     return (32-len(result)) * '0' + result
 
 
 def shift(x: str, zeroes: int) -> str:
     result = bin(int(x, 2) >> zeroes)[2:]
-    return (32-len(result))*'0' + result
+    return extend(result)
 
 
 def add_mod(m1: str, m2: str, m3: str) -> str:
     added = []
     for i in range(len(m1)):
-        added.append(
-            str((int(m1[i]) + int(m2[i]) + int(m3[i])) % 2))
+        added.append(str(int(m1[i]) ^ int(m2[i]) ^ int(m3[i])))
     return ''.join(added)
 
 
@@ -146,16 +141,19 @@ def Maj(a: str, b: str, c: str) -> str:
 def t1(e: str, f: str, g: str, h: str, K: str, w: str):
     Sigma_1 = Sigma1(e)
     choose = Ch(e, f, g)
-    result = bin((int(h, 2) + int(Sigma_1, 2) + int(choose, 2) +
-                 int(K, 2) + int(w, 2)) % (2**32))[2:]
+    result = bin(sum([int(x, 2)
+                 for x in [h, Sigma_1, choose, K, w]]) % (2**32))[2:]
     return extend(result)
+
+
+def wrap_32(x: str, y: str) -> str:
+    return extend(bin((int(x, 2) + int(y, 2)) % (2**32))[2:])
 
 
 def t2(a: str, b: str, c: str):
     Sigma_0 = Sigma0(a)
     Majority = Maj(a, b, c)
-    result = bin((int(Sigma_0, 2) + int(Majority, 2)) % (2**32))[2:]
-    return extend(result)
+    return wrap_32(Sigma_0, Majority)
 
 
 def compute(inpt: str) -> str:
@@ -170,14 +168,25 @@ def compute(inpt: str) -> str:
             h = g
             g = f
             f = e
-            e = extend(bin((int(d, 2) + int(t_1, 2)) % (2**32))[2:])
+            e = wrap_32(d, t_1)
             d = c
             c = b
             b = a
-            a = extend(bin((int(t_1, 2) + int(t_2, 2)) % (2**32))[2:])
+            a = wrap_32(t_1, t_2)
         # update
+        h0 = wrap_32(a, h0)
+        h1 = wrap_32(b, h1)
+        h2 = wrap_32(c, h2)
+        h3 = wrap_32(d, h3)
+        h4 = wrap_32(e, h4)
+        h5 = wrap_32(f, h5)
+        h6 = wrap_32(g, h6)
+        h7 = wrap_32(h, h7)
 
-    result = ''.join([])
+    result = ''.join([h0, h1, h2, h3, h4, h5, h6, h7])
     return result
 
-print(compute('A'))
+
+def hash_hex(inpt):
+    hash_bin = compute(inpt)
+    return hex(int(hash_bin, 2))[2:]
